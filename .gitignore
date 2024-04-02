@@ -37,3 +37,6 @@ out/
 
 ### Static ###
 /src/main/resources/static/models/*
+
+### Upload files ###
+/uploads/models/*
