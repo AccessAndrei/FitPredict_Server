@@ -40,3 +40,5 @@ out/
 
 ### Upload files ###
 /uploads/models/*
+/uploads/images/*
+/uploads/videos/*
