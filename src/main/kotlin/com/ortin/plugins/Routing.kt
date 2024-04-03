@@ -1,5 +1,6 @@
 package com.ortin.plugins
 
+import com.ortin.routes.cards.getAllFitCards
 import com.ortin.routes.cards.getRegisterFitCard
 import com.ortin.routes.download.downloadImage
 import com.ortin.routes.download.downloadModel
@@ -28,6 +29,7 @@ fun Application.configureRouting() {
 
         /* ----- RegisterFitCard ----- */
         getRegisterFitCard()
+        getAllFitCards()
 
         staticResources("/models", "static/models") {
             preCompressed(CompressedFileType.GZIP)
