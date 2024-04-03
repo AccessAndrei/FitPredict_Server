@@ -11,7 +11,8 @@ object RouteReservingManager {
 
         do {
             id = UUID.randomUUID().toString()
-        } while (id !in routeReserving)
+            println("New ID: $id")
+        } while (id in routeReserving)
         routeReserving[id] = null
 
         return id
