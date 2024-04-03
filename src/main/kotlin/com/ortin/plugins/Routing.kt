@@ -1,5 +1,6 @@
 package com.ortin.plugins
 
+import com.ortin.routes.cards.getRegisterFitCard
 import com.ortin.routes.models.uploadImage
 import com.ortin.routes.models.uploadModel
 import com.ortin.routes.models.uploadVideo
@@ -16,6 +17,9 @@ fun Application.configureRouting() {
         uploadModel()
         uploadImage()
         uploadVideo()
+
+        /* ----- RegisterFitCard ----- */
+        getRegisterFitCard()
 
         staticResources("/models", "static/models") {
             preCompressed(CompressedFileType.GZIP)
