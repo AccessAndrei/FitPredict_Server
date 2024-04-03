@@ -1,6 +1,9 @@
 package com.ortin.plugins
 
 import com.ortin.routes.cards.getRegisterFitCard
+import com.ortin.routes.download.downloadImage
+import com.ortin.routes.download.downloadModel
+import com.ortin.routes.download.downloadVideo
 import com.ortin.routes.models.uploadImage
 import com.ortin.routes.models.uploadModel
 import com.ortin.routes.models.uploadVideo
@@ -17,6 +20,11 @@ fun Application.configureRouting() {
         uploadModel()
         uploadImage()
         uploadVideo()
+
+        /* ----- Download ----- */
+        downloadModel()
+        downloadImage()
+        downloadVideo()
 
         /* ----- RegisterFitCard ----- */
         getRegisterFitCard()
