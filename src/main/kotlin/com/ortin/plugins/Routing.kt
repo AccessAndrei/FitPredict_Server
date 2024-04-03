@@ -1,5 +1,8 @@
 package com.ortin.plugins
 
+import com.ortin.routes.download.downloadImage
+import com.ortin.routes.download.downloadModel
+import com.ortin.routes.download.downloadVideo
 import com.ortin.routes.models.uploadImage
 import com.ortin.routes.models.uploadModel
 import com.ortin.routes.models.uploadVideo
@@ -16,6 +19,11 @@ fun Application.configureRouting() {
         uploadModel()
         uploadImage()
         uploadVideo()
+
+        /* ----- Download ----- */
+        downloadModel()
+        downloadImage()
+        downloadVideo()
 
         staticResources("/models", "static/models") {
             preCompressed(CompressedFileType.GZIP)
