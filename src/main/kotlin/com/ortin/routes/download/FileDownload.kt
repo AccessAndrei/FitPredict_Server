@@ -1,7 +1,6 @@
 package com.ortin.routes.download
 
-import com.ortin.core.managers.RouteReservingManager.getReservedPath
-import com.ortin.core.managers.RouteReservingManager.isReserved
+import com.ortin.core.managers.RouteReservingManager.getSafetyFilesName
 import com.ortin.plugins.generalCheck
 import com.ortin.routes.models.IMAGE_PATH
 import com.ortin.routes.models.MODEL_PATH
@@ -16,7 +15,9 @@ import java.io.File
 fun Route.downloadModel() {
     get("/download/model/{id}") {
         generalCheck {
-            val fileName = getFileNameInReservingManager(id = call.parameters["id"])
+            val fileName = getSafetyFilesName(id = call.parameters["id"]).modelName
+            requireNotNull(fileName) { "Model name not found in reserving system" }
+
             val imageFile = File("$MODEL_PATH/${fileName}")
             call.respondFileWithNotExists(imageFile)
         }
@@ -26,7 +27,9 @@ fun Route.downloadModel() {
 fun Route.downloadImage() {
     get("/download/image/{id}") {
         generalCheck {
-            val fileName = getFileNameInReservingManager(id = call.parameters["id"])
+            val fileName = getSafetyFilesName(id = call.parameters["id"]).imageName
+            requireNotNull(fileName) { "Image name not found in reserving system" }
+
             val imageFile = File("$IMAGE_PATH/$fileName")
             call.respondFileWithNotExists(imageFile)
         }
@@ -36,21 +39,13 @@ fun Route.downloadImage() {
 fun Route.downloadVideo() {
     get("/download/video/{id}") {
         generalCheck {
-            val fileName = getFileNameInReservingManager(id = call.parameters["id"])
+            val fileName = getSafetyFilesName(id = call.parameters["id"]).videoName
+            requireNotNull(fileName) { "Model name not found in reserving system" }
+
             val imageFile = File("$VIDEO_PATH/$fileName")
             call.respondFileWithNotExists(imageFile)
         }
     }
-}
-
-private fun getFileNameInReservingManager(id: String?): String {
-    requireNotNull(id) { "Id must be require" }
-    require(isReserved(id = id)) { "Id is not reserved" }
-
-    val fileName = getReservedPath(id = id)
-    requireNotNull(fileName) { "Path not found in reserving system" }
-
-    return fileName
 }
 
 private suspend inline fun ApplicationCall.respondFileWithNotExists(file: File) {
