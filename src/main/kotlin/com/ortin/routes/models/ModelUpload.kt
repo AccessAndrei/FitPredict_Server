@@ -29,7 +29,7 @@ fun Route.uploadModel() {
 
             val fileName =
                 call.receiveMultipart().uploadFile(fileName = "model_${id}_version_$modelVersion", path = MODEL_PATH)
-            bindRoute(id = id, filesInfo = FilesInfo(modelName = fileName))
+            bindRoute(id = id, filesInfo = FilesInfo(modelName = fileName, modelVersion = modelVersion))
 
             val newCard = cardRepository.getCardById(id).copy(modelVersionCode = modelVersion)
             cardRepository.updateCard(newCard)
@@ -50,7 +50,7 @@ fun Route.uploadImage() {
 
             val fileName =
                 call.receiveMultipart().uploadFile(fileName = "image_${id}_version_$imageVersion", path = IMAGE_PATH)
-            bindRoute(id = id, filesInfo = FilesInfo(imageName = fileName))
+            bindRoute(id = id, filesInfo = FilesInfo(imageName = fileName, imageVersion = imageVersion))
 
             val newCard = cardRepository.getCardById(id).copy(imageVersionCode = imageVersion)
             cardRepository.updateCard(newCard)
@@ -71,7 +71,7 @@ fun Route.uploadVideo() {
 
             val fileName =
                 call.receiveMultipart().uploadFile(fileName = "video_${id}_version_$videoVersion", path = VIDEO_PATH)
-            bindRoute(id = id, filesInfo = FilesInfo(videoName = fileName))
+            bindRoute(id = id, filesInfo = FilesInfo(videoName = fileName, videoVersion = videoVersion))
 
             val newCard = cardRepository.getCardById(id).copy(videoVersionCode = videoVersion)
             cardRepository.updateCard(newCard)
