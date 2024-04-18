@@ -20,6 +20,14 @@ object RouteReservingManager {
         return id
     }
 
+    fun removeReserve(id: String): Boolean {
+        return runCatching {
+            require(isReserved(id = id))
+            requireNotNull(routeReserving.remove(id))
+            true
+        }.getOrDefault(false)
+    }
+
     fun bindRoute(id: String, filesInfo: FilesInfo) {
         routeReserving[id] = routeReserving[id]!!.merge(filesInfo)
     }

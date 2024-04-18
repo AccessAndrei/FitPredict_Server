@@ -1,7 +1,9 @@
 package com.ortin.plugins
 
+import com.ortin.routes.cards.changeFitCard
 import com.ortin.routes.cards.getAllFitCards
-import com.ortin.routes.cards.getRegisterFitCard
+import com.ortin.routes.cards.registerFitCard
+import com.ortin.routes.cards.removeFitCard
 import com.ortin.routes.download.downloadImage
 import com.ortin.routes.download.downloadModel
 import com.ortin.routes.download.downloadVideo
@@ -27,9 +29,11 @@ fun Application.configureRouting() {
         downloadImage()
         downloadVideo()
 
-        /* ----- RegisterFitCard ----- */
-        getRegisterFitCard()
+        /* ----- ControlFitCard ----- */
+        registerFitCard()
         getAllFitCards()
+        changeFitCard()
+        removeFitCard()
 
         staticResources("/models", "static/models") {
             preCompressed(CompressedFileType.GZIP)

@@ -31,7 +31,8 @@ fun Route.uploadModel() {
                 call.receiveMultipart().uploadFile(fileName = "model_${id}_version_$modelVersion", path = MODEL_PATH)
             bindRoute(id = id, filesInfo = FilesInfo(modelName = fileName, modelVersion = modelVersion))
 
-            val newCard = cardRepository.getCardById(id).copy(modelVersionCode = modelVersion)
+            val newCard = cardRepository.getCardById(id)?.copy(modelVersionCode = modelVersion)
+            requireNotNull(newCard) { "Not found card in storage by this id" }
             cardRepository.updateCard(newCard)
 
             call.respondText("file uploaded to '$MODEL_PATH/$fileName'")
@@ -52,7 +53,8 @@ fun Route.uploadImage() {
                 call.receiveMultipart().uploadFile(fileName = "image_${id}_version_$imageVersion", path = IMAGE_PATH)
             bindRoute(id = id, filesInfo = FilesInfo(imageName = fileName, imageVersion = imageVersion))
 
-            val newCard = cardRepository.getCardById(id).copy(imageVersionCode = imageVersion)
+            val newCard = cardRepository.getCardById(id)?.copy(imageVersionCode = imageVersion)
+            requireNotNull(newCard) { "Not found card in storage by this id" }
             cardRepository.updateCard(newCard)
 
             call.respondText("file uploaded to '$IMAGE_PATH/$fileName'")
@@ -73,7 +75,9 @@ fun Route.uploadVideo() {
                 call.receiveMultipart().uploadFile(fileName = "video_${id}_version_$videoVersion", path = VIDEO_PATH)
             bindRoute(id = id, filesInfo = FilesInfo(videoName = fileName, videoVersion = videoVersion))
 
-            val newCard = cardRepository.getCardById(id).copy(videoVersionCode = videoVersion)
+            val newCard = cardRepository.getCardById(id)?.copy(videoVersionCode = videoVersion)
+            requireNotNull(newCard) { "Not found card in storage by this id" }
+
             cardRepository.updateCard(newCard)
 
             call.respondText("file uploaded to '$VIDEO_PATH/$fileName'")

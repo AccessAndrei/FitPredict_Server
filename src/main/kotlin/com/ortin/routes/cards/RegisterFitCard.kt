@@ -14,13 +14,13 @@ import kotlinx.coroutines.Dispatchers
 
 private val cardRepository: FitCardRepository = FitCardRepositoryImpl(Dispatchers.IO)
 
-fun Route.getRegisterFitCard() {
+fun Route.registerFitCard() {
     post("/cards/registerfitcard") {
         generalCheck {
             val fitCard = call.receive<RegisterFitCardModel>()
             val cardId = RouteReservingManager.reserveCard()
 
-            cardRepository.createCard(
+            val isCreated = cardRepository.createCard(
                 CardFit(
                     cardId = cardId,
                     nameFit = fitCard.nameFit,
@@ -30,6 +30,8 @@ fun Route.getRegisterFitCard() {
                     videoVersionCode = null,
                 )
             )
+            require(isCreated) { "Card not created" }
+
             call.respondText { cardId }
         }
     }

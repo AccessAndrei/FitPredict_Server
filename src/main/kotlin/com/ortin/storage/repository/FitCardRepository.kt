@@ -11,53 +11,48 @@ import kotlinx.coroutines.withContext
 
 interface FitCardRepository {
 
-    suspend fun createCard(cardFit: CardFit)
-    suspend fun updateCard(cardFit: CardFit)
-    suspend fun removeCard(cardFit: CardFit)
+    suspend fun createCard(cardFit: CardFit): Boolean
+    suspend fun updateCard(cardFit: CardFit): Boolean
+    suspend fun removeCard(cardFit: CardFit): Boolean
     suspend fun getAllAvailableCards(): List<CardFit>
-    suspend fun getCardById(cardId: String): CardFit
+    suspend fun getCardById(cardId: String): CardFit?
 }
 
 class FitCardRepositoryImpl(
-    val dispatcher: CoroutineDispatcher
+    private val dispatcher: CoroutineDispatcher
 ) : FitCardRepository {
 
-    val cardStorage = FitCardStorage.cardList
+    private val cardStorage = FitCardStorage.cardList
 
-    override suspend fun createCard(cardFit: CardFit) {
-        withContext(dispatcher) {
-            cardStorage.add(cardFit.mapToStorage().copy(isActive = false))
-        }
+    override suspend fun createCard(cardFit: CardFit): Boolean = withContext(dispatcher) {
+        cardStorage.add(cardFit.mapToStorage().copy(isActive = false))
     }
 
-    override suspend fun updateCard(cardFit: CardFit) {
-        withContext(dispatcher) {
-            val entity = cardFit.mapToStorage()
-
-            val isActive = runCatching {
-                with(entity) {
-                    requireNotNull(modelVersionCode)
-                    requireNotNull(imageVersionCode)
-                    requireNotNull(videoVersionCode)
-                    true
-                }
-            }.getOrDefault(defaultValue = false)
-
-            cardStorage.replace(entity = entity.copy(isActive = isActive)) { card ->
-                card.cardId == entity.cardId
+    override suspend fun updateCard(cardFit: CardFit): Boolean = withContext(dispatcher) {
+        val entity = cardFit.mapToStorage()
+        val isActive = runCatching {
+            with(entity) {
+                requireNotNull(modelVersionCode)
+                requireNotNull(imageVersionCode)
+                requireNotNull(videoVersionCode)
+                true
             }
+        }.getOrDefault(defaultValue = false)
+
+        cardStorage.replace(entity = entity.copy(isActive = isActive)) { card ->
+            card.cardId == entity.cardId
         }
     }
 
-    override suspend fun removeCard(cardFit: CardFit) {
+    override suspend fun removeCard(cardFit: CardFit): Boolean = withContext(dispatcher) {
         cardStorage.removeIf { card -> card.cardId == cardFit.cardId }
     }
 
-    override suspend fun getAllAvailableCards(): List<CardFit> {
-        return cardStorage.filter { card -> card.isActive }.map(CardFitEntity::mapToModel)
+    override suspend fun getAllAvailableCards(): List<CardFit> = withContext(dispatcher) {
+        cardStorage.filter { card -> card.isActive }.map(CardFitEntity::mapToModel)
     }
 
-    override suspend fun getCardById(cardId: String): CardFit {
-        return cardStorage.first { card -> card.cardId == cardId }.mapToModel()
+    override suspend fun getCardById(cardId: String): CardFit? = withContext(dispatcher) {
+        cardStorage.firstOrNull { card -> card.cardId == cardId }?.mapToModel()
     }
 }
