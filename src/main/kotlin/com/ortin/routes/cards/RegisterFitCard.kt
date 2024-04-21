@@ -1,45 +1,38 @@
 package com.ortin.routes.cards
 
-import com.ortin.GENERAL_SERVER_ROUTE
-import com.ortin.core.managers.RouteReservingManager.reserveRoute
-import com.ortin.models.CardFitEntity
+import com.ortin.core.managers.RouteReservingManager
+import com.ortin.models.CardFit
 import com.ortin.models.RegisterFitCardModel
-import com.ortin.models.RouteInfo
 import com.ortin.plugins.generalCheck
-import com.ortin.storage.FitCardStorage
+import com.ortin.storage.repository.FitCardRepository
+import com.ortin.storage.repository.FitCardRepositoryImpl
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.Dispatchers
 
-fun Route.getRegisterFitCard() {
-    get("/cards/registerfitcard") {
+private val cardRepository: FitCardRepository = FitCardRepositoryImpl(Dispatchers.IO)
+
+fun Route.registerFitCard() {
+    post("/cards/registerfitcard") {
         generalCheck {
             val fitCard = call.receive<RegisterFitCardModel>()
-            val generalRouteForDownload = "$GENERAL_SERVER_ROUTE/download"
-            val generalRouteForUpload = "$GENERAL_SERVER_ROUTE/upload"
+            val cardId = RouteReservingManager.reserveCard()
 
-            val modelRoute = reserveRoute()
-            val imageRoute = reserveRoute()
-            val videoRoute = reserveRoute()
-
-            FitCardStorage.cardList.add(
-                CardFitEntity(
+            val isCreated = cardRepository.createCard(
+                CardFit(
+                    cardId = cardId,
                     nameFit = fitCard.nameFit,
                     description = fitCard.description,
-                    modelRoute = "$generalRouteForDownload/model/$modelRoute",
-                    imageRoute = "$generalRouteForDownload/image/$imageRoute",
-                    videoRoute = "$generalRouteForDownload/video/$videoRoute",
+                    modelVersionCode = null,
+                    imageVersionCode = null,
+                    videoVersionCode = null,
                 )
             )
+            require(isCreated) { "Card not created" }
 
-            call.respond(
-                RouteInfo(
-                    routeForModel = "$generalRouteForUpload/model/$modelRoute",
-                    routeForImage = "$generalRouteForUpload/image/$imageRoute",
-                    routeForVideo = "$generalRouteForUpload/video/$videoRoute",
-                )
-            )
+            call.respondText { cardId }
         }
     }
 }

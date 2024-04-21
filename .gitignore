@@ -42,3 +42,6 @@ out/
 /uploads/models/*
 /uploads/images/*
 /uploads/videos/*
+!/uploads/models/Stub
+!/uploads/images/Stub
+!/uploads/videos/Stub

@@ -1,27 +1,40 @@
 package com.ortin.routes.models
 
 import com.ortin.core.managers.RouteReservingManager.bindRoute
-import com.ortin.core.managers.RouteReservingManager.getReservedPath
+import com.ortin.core.managers.RouteReservingManager.getSafetyFilesName
 import com.ortin.core.managers.RouteReservingManager.isReserved
+import com.ortin.models.FilesInfo
 import com.ortin.plugins.generalCheck
+import com.ortin.storage.repository.FitCardRepository
+import com.ortin.storage.repository.FitCardRepositoryImpl
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.Dispatchers
 import java.io.File
+
+private val cardRepository: FitCardRepository = FitCardRepositoryImpl(Dispatchers.IO)
 
 fun Route.uploadModel() {
     post("/upload/model/{id}") {
         generalCheck {
             val id = checkId(call.parameters["id"])
+            val modelVersion = getSafetyFilesName(id = id).modelVersion + 1
 
             val contentLength = call.request.header(HttpHeaders.ContentLength)
             require(contentLength!!.toInt() <= MAX_MODEL_SIZE_BYTES) { "File size exceeds ${MAX_MODEL_SIZE_BYTES.toMB()} MB limit" }
 
-            val fileName = call.receiveMultipart().uploadFile(fileName = id, path = MODEL_PATH)
-            bindRoute(id = id, fileName = fileName)
+            val fileName =
+                call.receiveMultipart().uploadFile(fileName = "model_${id}_version_$modelVersion", path = MODEL_PATH)
+            bindRoute(id = id, filesInfo = FilesInfo(modelName = fileName, modelVersion = modelVersion))
+
+            val newCard = cardRepository.getCardById(id)?.copy(modelVersionCode = modelVersion)
+            requireNotNull(newCard) { "Not found card in storage by this id" }
+            cardRepository.updateCard(newCard)
+
             call.respondText("file uploaded to '$MODEL_PATH/$fileName'")
         }
     }
@@ -31,12 +44,19 @@ fun Route.uploadImage() {
     post("/upload/image/{id}") {
         generalCheck {
             val id = checkId(call.parameters["id"])
+            val imageVersion = getSafetyFilesName(id = id).imageVersion + 1
 
             val contentLength = call.request.header(HttpHeaders.ContentLength)
             require(contentLength!!.toInt() <= MAX_IMAGE_SIZE_BYTES) { "File size exceeds ${MAX_IMAGE_SIZE_BYTES.toMB()} MB limit" }
 
-            val fileName = call.receiveMultipart().uploadFile(fileName = id, path = IMAGE_PATH)
-            bindRoute(id = id, fileName = fileName)
+            val fileName =
+                call.receiveMultipart().uploadFile(fileName = "image_${id}_version_$imageVersion", path = IMAGE_PATH)
+            bindRoute(id = id, filesInfo = FilesInfo(imageName = fileName, imageVersion = imageVersion))
+
+            val newCard = cardRepository.getCardById(id)?.copy(imageVersionCode = imageVersion)
+            requireNotNull(newCard) { "Not found card in storage by this id" }
+            cardRepository.updateCard(newCard)
+
             call.respondText("file uploaded to '$IMAGE_PATH/$fileName'")
         }
     }
@@ -46,12 +66,20 @@ fun Route.uploadVideo() {
     post("/upload/video/{id}") {
         generalCheck {
             val id = checkId(call.parameters["id"])
+            val videoVersion = getSafetyFilesName(id = id).videoVersion + 1
 
             val contentLength = call.request.header(HttpHeaders.ContentLength)
             require(contentLength!!.toInt() <= MAX_VIDEO_SIZE_BYTES) { "File size exceeds ${MAX_VIDEO_SIZE_BYTES.toMB()} MB limit" }
 
-            val fileName = call.receiveMultipart().uploadFile(fileName = id, path = VIDEO_PATH)
-            bindRoute(id = id, fileName = fileName)
+            val fileName =
+                call.receiveMultipart().uploadFile(fileName = "video_${id}_version_$videoVersion", path = VIDEO_PATH)
+            bindRoute(id = id, filesInfo = FilesInfo(videoName = fileName, videoVersion = videoVersion))
+
+            val newCard = cardRepository.getCardById(id)?.copy(videoVersionCode = videoVersion)
+            requireNotNull(newCard) { "Not found card in storage by this id" }
+
+            cardRepository.updateCard(newCard)
+
             call.respondText("file uploaded to '$VIDEO_PATH/$fileName'")
         }
     }
@@ -82,7 +110,6 @@ private suspend fun MultiPartData.uploadFile(fileName: String, path: String): St
 private fun checkId(id: String?): String {
     requireNotNull(id) { "Id must be require" }
     require(isReserved(id = id)) { "Id is not reserved" }
-    require(getReservedPath(id = id) == null) { "Id already has a path" }
 
     return id
 }
